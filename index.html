@@ -240,39 +240,34 @@ title="Open source URL: https://limewin.ru/"
             <h2 id="fancybox-caption-2" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">#limewin_casino</h2>
             <img src="https://limewin.ru/favicon/limewin-casino-manager.png" alt="Limewin Casino" loading="lazy" style="display:none">
             <img src="https://limewin.ru/favicon/web-app-manifest-512x512.png" alt="Lime win casino" loading="lazy" style="display:none">
+            <script src="scripts/jquery-1.12.4.min.js"></script>
+            <script src="scripts/jquery-migrate-1.4.1.min.js"></script>
+            <script src="scripts/jquery.fancybox.min.js"></script>
             <script>
+            (function () {
             var GALLERY_ANCHOR = 'player-galery';
             var GALLERY_BASE = 'https://limewin.ru';
             var GALLERY_SHARE_URL = GALLERY_BASE + '/#' + GALLERY_ANCHOR;
             var GALLERY_IFRAME_CODE = '<iframe src="' + GALLERY_SHARE_URL + '" width="800" height="520" frameborder="0" allowfullscreen title="LimeWin Casino Gallery"></iframe>';
             var GALLERY_SLIDES = [
-                { src: GALLERY_BASE + '/favicon/Limewin.png', opts: { caption: '@limewin_casino', alt: 'LimeWin Casino' } },
-                { src: GALLERY_BASE + '/favicon/limewin-casino-manager.png', opts: { caption: '@lime_win_casino', alt: 'Limewin Casino manager' } },
-                { src: GALLERY_BASE + '/favicon/web-app-manifest-512x512.png', opts: { caption: '@lime_win_com', alt: 'LimeWin Casino logo' } },
-                { src: GALLERY_BASE + '/favicon/web-app-manifest-192x192.png', opts: { caption: '@limewin_casino', alt: 'LimeWin Casino' } },
-                { src: GALLERY_BASE + '/favicon/apple-touch-icon.png', opts: { caption: '@lime_win_com', alt: 'LimeWin Casino mobile' } }
+                { src: GALLERY_BASE + '/favicon/Limewin.png', type: 'image', opts: { caption: '@limewin_casino', alt: 'LimeWin Casino' } },
+                { src: GALLERY_BASE + '/favicon/limewin-casino-manager.png', type: 'image', opts: { caption: '@lime_win_casino', alt: 'Limewin Casino manager' } },
+                { src: GALLERY_BASE + '/favicon/web-app-manifest-512x512.png', type: 'image', opts: { caption: '@lime_win_com', alt: 'LimeWin Casino logo' } },
+                { src: GALLERY_BASE + '/favicon/web-app-manifest-192x192.png', type: 'image', opts: { caption: '@limewin_casino', alt: 'LimeWin Casino' } },
+                { src: GALLERY_BASE + '/favicon/apple-touch-icon.png', type: 'image', opts: { caption: '@lime_win_com', alt: 'LimeWin Casino mobile' } }
             ];
-            function loadScript(src) {
-                return new Promise(function (resolve, reject) {
-                    var script = document.createElement('script');
-                    script.src = src;
-                    script.onload = function () { resolve(); };
-                    script.onerror = function () { reject(new Error('Failed to load ' + src)); };
-                    document.head.appendChild(script);
-                });
-            }
-            async function loadFancybox() {
-                if (!window.jQuery) {
-                    await loadScript('scripts/jquery-1.12.4.min.js');
-                }
-                if (!window.jQuery.fn.fancybox) {
-                    await loadScript('scripts/jquery.fancybox.min.js');
+            var galleryOpening = false;
+
+            function setupShare() {
+                if (!window.jQuery || !jQuery.fancybox || !jQuery.fancybox.defaults.share) {
+                    return;
                 }
                 jQuery.fancybox.defaults.share.url = function () {
                     return GALLERY_SHARE_URL;
                 };
-                if (jQuery.fancybox.defaults.share.tpl.indexOf('fancybox-share__iframe') === -1) {
-                    jQuery.fancybox.defaults.share.tpl = jQuery.fancybox.defaults.share.tpl.replace(
+                var tpl = jQuery.fancybox.defaults.share.tpl || '';
+                if (tpl.indexOf('fancybox-share__iframe') === -1) {
+                    jQuery.fancybox.defaults.share.tpl = tpl.replace(
                         '<p><input class="fancybox-share__input"',
                         '<p><strong>Gallery link</strong></p><p><input class="fancybox-share__input"'
                     ).replace(
@@ -286,14 +281,19 @@ title="Open source URL: https://limewin.ru/"
                     }
                 });
             }
-            async function openGalleryWithAutoplay() {
-                await loadFancybox();
+
+            function openGalleryWithAutoplay() {
+                if (galleryOpening || !window.jQuery || !jQuery.fn.fancybox) {
+                    return;
+                }
+                galleryOpening = true;
+                setupShare();
                 if (history.replaceState) {
                     history.replaceState(null, '', '#' + GALLERY_ANCHOR);
                 } else {
                     window.location.hash = GALLERY_ANCHOR;
                 }
-                $.fancybox.open(GALLERY_SLIDES, {
+                jQuery.fancybox.open(GALLERY_SLIDES, {
                     aria: { label: 'Lime_win_casino', labelledby: GALLERY_ANCHOR },
                     loop: true,
                     buttons: ['slideShow', 'share', 'thumbs', 'zoom', 'close'],
@@ -311,28 +311,39 @@ title="Open source URL: https://limewin.ru/"
                                 container.attr('aria-label', 'Limewin_casino');
                             }
                         }
+                    },
+                    afterClose: function () {
+                        galleryOpening = false;
                     }
                 });
             }
-            document.getElementById('player-galery').addEventListener('click', openGalleryWithAutoplay);
+
+            function startGallery() {
+                var trigger = document.getElementById('player-galery');
+                if (!trigger) {
+                    return;
+                }
+                trigger.addEventListener('click', openGalleryWithAutoplay);
+                if (window.location.hash === '#' + GALLERY_ANCHOR) {
+                    openGalleryWithAutoplay();
+                } else {
+                    setTimeout(openGalleryWithAutoplay, 15000);
+                }
+            }
+
             window.addEventListener('hashchange', function () {
-                if (window.location.hash === '#' + GALLERY_ANCHOR && (!window.jQuery || !jQuery.fancybox || !jQuery.fancybox.getInstance())) {
+                if (window.location.hash === '#' + GALLERY_ANCHOR && (!jQuery.fancybox || !jQuery.fancybox.getInstance())) {
                     openGalleryWithAutoplay();
                 }
             });
-            window.addEventListener('DOMContentLoaded', function () {
-                if (window.location.hash === '#' + GALLERY_ANCHOR) {
-                    document.getElementById('player-galery').click();
-                } else {
-                    setTimeout(function () {
-                        document.getElementById('player-galery').click();
-                    }, 15000);
-                }
-            });
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', startGallery);
+            } else {
+                startGallery();
+            }
+            })();
             </script>
-            <script defer src="scripts/jquery-1.12.4.min.js"></script>
-            <script defer src="scripts/jquery-migrate-1.4.1.min.js"></script>
-            <script defer src="scripts/jquery.fancybox.min.js"></script>
     </footer>
     <script defer src="scripts/datetime.js"></script>
 </body>
