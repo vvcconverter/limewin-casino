@@ -1,0 +1,21 @@
+{
+  "name": "LimeWin Casino",
+  "short_name": "LimeWin",
+  "icons": [
+    {
+      "src": "/favicon/Limewin.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#111111",
+  "background_color": "#111111",
+  "display": "standalone"
+}
